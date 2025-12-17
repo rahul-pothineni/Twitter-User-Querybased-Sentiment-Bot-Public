@@ -1,0 +1,6 @@
+streamlit
+praw
+textblob
+pandas
+matplotlib
+pytorch
