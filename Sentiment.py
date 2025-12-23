@@ -35,6 +35,7 @@ import Extract
 import requests
 import statistics
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from PlayerRAG import PlayerRAG
 
 RAPIDAPI_KEY = Extract.RAPIDAPI_KEY
 RAPIDAPI_HOST = Extract.RAPIDAPI_HOST
@@ -45,10 +46,8 @@ BASE_URL = f"https://{RAPIDAPI_HOST}/search.php"
 tokenizer = AutoTokenizer.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
 model = AutoModelForSequenceClassification.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
 
-#Load the player from Tester.py
-player = "Josh Allen"
-team = "Bills"
-posistion = "Quarterback"
+# Initialize RAG
+rag = PlayerRAG()
 
 def analyze_twitter_sentiment(
     query: str,
@@ -70,6 +69,19 @@ def analyze_twitter_sentiment(
     analyzed_count = 0 # amount of tweets analyzed
     cursor = None # pragmentation cursor
     phrase_lower = phrase.lower() #consistency 
+
+    # Resolve player using Claude (synchronous, no async needed)
+    player_info = rag.retrieve_player_info(query)
+    if not player_info:
+        print(f"Could not resolve player: {query}")
+        return
+    
+    # Insert/get player
+    player_id = Database.insert_player(
+        player_info["name"],
+        player_info["team"],
+        player_info["position"]
+    )
 
     while analyzed_count < limit:
         params = {
@@ -137,7 +149,7 @@ def analyze_twitter_sentiment(
             print("-" * 60)
 
             # call to insert tweet into the db
-            Database.insert_tweet(text, sentiment, "  ", Database.get_player_id_by_name(player))
+            Database.insert_tweet(text, sentiment, "  ", player_id)
 
         # checks if there is anymore data from the next page (pagination cursor)
         cursor = Extract.extract_cursor(data)
@@ -170,11 +182,10 @@ def analyze_twitter_sentiment(
 # ==============================
 
 analyze_twitter_sentiment(
-    query=player,
-    phrase=player,
+    query="CMC",
+    phrase="",
     limit=10,
     search_type="Top"
 )
 
-Database.insert_player(player, team, posistion)
 Database.print_sentiment_and_tweets()

@@ -9,20 +9,20 @@ cur = conn.cursor()
 
 # create tables
 cur.executescript("""
-CREATE TABLE Players (
+CREATE TABLE IF NOT EXISTS Players (
     PlayerID INTEGER PRIMARY KEY AUTOINCREMENT ,
-    GovName TEXT NOT NULL,
+    GovName TEXT NOT NULL UNIQUE,
     Team TEXT NOT NULL,
     Position TEXT NOT NULL );
             
-CREATE TABLE Tweets ( 
+CREATE TABLE IF NOT EXISTS Tweets ( 
     TweetID INTEGER PRIMARY KEY AUTOINCREMENT, 
     TweetText TEXT NOT NULL, 
     DateTimeCreated TEXT NOT NULL, 
     PlayerID INTEGER,
     FOREIGN KEY (PlayerID) REFERENCES Players (PlayerID) );
             
-CREATE TABLE Sentiment (
+CREATE TABLE IF NOT EXISTS Sentiment (
     PlayerID INTEGER,
     TweetID INTEGER,
     SentimentScore REAL NOT NULL, 
@@ -32,28 +32,43 @@ CREATE TABLE Sentiment (
 
 """)
 
-# Given the PlayerName returns the PlayerID
+
+
 def get_player_id_by_name(PlayerName):
-    return conn.execute(
+    """Get PlayerID by GovName"""
+    result = conn.execute(
         "SELECT PlayerID FROM Players WHERE GovName = ?",
         (PlayerName,)
     ).fetchone()
+    return result[0] if result else None
+
 
 def insert_player(GovName, Team, Position):
-    cur.execute("INSERT INTO Players (GovName, Team, Position) VALUES (?, ?, ?);", (GovName, Team, Position))
+    """Insert player, avoiding duplicates"""
+    try:
+        cur.execute(
+            "INSERT INTO Players (GovName, Team, Position) VALUES (?, ?, ?);",
+            (GovName, Team, Position)
+        )
+        conn.commit()
+        return cur.lastrowid
+    except sqlite3.IntegrityError:
+        print(f"Player '{GovName}' already exists")
+        return get_player_id_by_name(GovName)
 
-# Insert a singular tweet into the database in the "Tweet" table, 
-# then inserts data for that tweet into the "Sentiment" table. 
-def insert_tweet(TweetText, SentimentScore, DateTimeCreated, PlayerName):
-    PlayerID = get_player_id_by_name(PlayerName)
+
+def insert_tweet(TweetText, SentimentScore, DateTimeCreated, PlayerID):
+    """Insert tweet and sentiment data into the database"""
 
     cur.execute("INSERT INTO Tweets (TweetText, DateTimeCreated, PlayerID) VALUES (?, ?, ?);", (TweetText, DateTimeCreated, PlayerID))
     TweetID = cur.lastrowid
     cur.execute("INSERT INTO Sentiment (PlayerID, TweetID, SentimentScore) VALUES (?, ?, ?);", (PlayerID, TweetID, SentimentScore))
+    conn.commit()
 
 
-#TODO: fix the view; Players db not populating
 def print_sentiment_and_tweets():
+    """Create and print a view that combines Sentiment, Players, and Tweets tables"""
+
     cur.execute("""
     CREATE VIEW IF NOT EXISTS SentimentView AS
     SELECT
