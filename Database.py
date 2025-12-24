@@ -1,3 +1,18 @@
+"""
+Filename: Database.py
+
+Description:
+    Manages SQLite database for storing NFL player data, tweets, and sentiment scores.
+    Handles player insertion with duplicate prevention, tweet storage, and sentiment
+    analysis results. Provides a view for querying combined sentiment and tweet data.
+
+Author: Rahul Pothineni
+Created: 2025-12-17 - Present
+
+Dependencies:
+    - sqlite3
+"""
+
 import sqlite3
 DB_PATH = "tweets.db"
 
@@ -34,38 +49,63 @@ CREATE TABLE IF NOT EXISTS Sentiment (
 
 
 
-def get_player_id_by_name(PlayerName):
-    """Get PlayerID by GovName"""
+def get_player_id_by_name(player_name):
+    """Get PlayerID by GovName (normalized)"""
+
+    name = player_name.strip().lower()
     result = conn.execute(
-        "SELECT PlayerID FROM Players WHERE GovName = ?",
-        (PlayerName,)
+        "SELECT PlayerID FROM Players WHERE LOWER(TRIM(GovName)) = ?",
+        (name,)
     ).fetchone()
     return result[0] if result else None
 
 
-def insert_player(GovName, Team, Position):
-    """Insert player, avoiding duplicates"""
+def insert_player(gov_name, team, position):
+    """Insert player if not exists, return existing PlayerID if duplicate"""
+
+    # Normalize input
+    name = gov_name.strip()
+    team = team.strip()
+    position = position.strip()
+    
+    # Check if player already exists in the db
+    player_id = get_player_id_by_name(name)
+    
+    if player_id:
+        return player_id
+    
+    # Insert new player
     try:
         cur.execute(
             "INSERT INTO Players (GovName, Team, Position) VALUES (?, ?, ?);",
-            (GovName, Team, Position)
+            (name, team, position)
         )
         conn.commit()
         return cur.lastrowid
     except sqlite3.IntegrityError:
-        print(f"Player '{GovName}' already exists")
-        return get_player_id_by_name(GovName)
+        # Fallback if still fails
+        print(f"Player '{name}' insertion failed")
+        return get_player_id_by_name(name)
 
 
-def insert_tweet(TweetText, SentimentScore, DateTimeCreated, PlayerID):
+def insert_tweet(tweet_text, sentiment_score, date_time_created, player_id):
     """Insert tweet and sentiment data into the database"""
 
-    cur.execute("INSERT INTO Tweets (TweetText, DateTimeCreated, PlayerID) VALUES (?, ?, ?);", (TweetText, DateTimeCreated, PlayerID))
-    TweetID = cur.lastrowid
-    cur.execute("INSERT INTO Sentiment (PlayerID, TweetID, SentimentScore) VALUES (?, ?, ?);", (PlayerID, TweetID, SentimentScore))
+    cur.execute(
+        "INSERT INTO Tweets (TweetText, DateTimeCreated, PlayerID) VALUES (?, ?, ?);",
+        (tweet_text, date_time_created, player_id)
+    )
+
+    # Gets the last row id of the tweet inserted, which is autoincremented. 
+    # Nedded when inserting into the Sentiment table as it needs the TweetID. 
+    tweet_id = cur.lastrowid
+    cur.execute(
+        "INSERT INTO Sentiment (PlayerID, TweetID, SentimentScore) VALUES (?, ?, ?);",
+        (player_id, tweet_id, sentiment_score)
+    )
     conn.commit()
 
-
+# used for debugging. 
 def print_sentiment_and_tweets():
     """Create and print a view that combines Sentiment, Players, and Tweets tables"""
 

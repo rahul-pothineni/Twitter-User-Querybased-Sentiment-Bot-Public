@@ -85,7 +85,7 @@ def analyze_twitter_sentiment(
 
     while analyzed_count < limit:
         params = {
-            "query": query,
+            "query": player_info["name"],  # Search for actual player name, not the nickname
             "search_type": search_type
         }
 
@@ -133,10 +133,10 @@ def analyze_twitter_sentiment(
             # creates sentiment for the tweet.
             # sentiment comes out from the model like this: [{'label': 'Negative', 'score': 0.7236}],
             # so we grab the "score" aka our sentiment score and the sign of the sentiment from "label"
-            sentimentTempDict = sentiment_task(text)
-            if(sentimentTempDict[0]["label"].lower() == "negative"):
-                sentiment = -sentimentTempDict[0]["score"]
-            else: sentiment = sentimentTempDict[0]["score"]
+            sentiment_temp_dict = sentiment_task(text)
+            if(sentiment_temp_dict[0]["label"].lower() == "negative"):
+                sentiment = -sentiment_temp_dict[0]["score"]
+            else: sentiment = sentiment_temp_dict[0]["score"]
 
             polarities.append(sentiment)
             analyzed_count += 1
@@ -144,7 +144,6 @@ def analyze_twitter_sentiment(
             print("TWEET:")
             print(text)
             print()
-            #print(sentimentTempDict[0]["label"])
             print("Polarity:", sentiment)
             print("-" * 60)
 
@@ -182,10 +181,10 @@ def analyze_twitter_sentiment(
 # ==============================
 
 analyze_twitter_sentiment(
-    query="CMC",
+    query="King Henry",
     phrase="",
     limit=10,
     search_type="Top"
 )
 
-Database.print_sentiment_and_tweets()
+#Database.print_sentiment_and_tweets()

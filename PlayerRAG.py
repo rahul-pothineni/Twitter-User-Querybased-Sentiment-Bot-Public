@@ -1,18 +1,32 @@
 """
-PlayerRAG.py - Claude-based player resolution using Anthropic API
+Filename: PlayerRAG.py
+
+Description:
+    Retrieval-Augmented Generation system for NFL player identification using OpenAI API.
+    Resolves player nicknames/abbreviations to official names through local KB lookup
+    and LLM-based identification. Auto-populates KB with newly discovered players.
+
+Author: Rahul Pothineni
+Created: 2025-12-22 - Present
+
+Dependencies:
+    - openai
+    - json
+    - pathlib
 """
+
 import json
 from pathlib import Path
 import Database
-from anthropic import Anthropic
-from Keys import ANTHROPIC_API_KEY
+from openai import OpenAI
+from Keys import OPENAI_API_KEY
 
 class PlayerRAG:
     def __init__(self, kb_file: str = "nfl_players_kb.json"):
         self.kb_file = kb_file
         self.knowledge_base = self._load_kb()
         self.nickname_map = self._build_nickname_map()
-        self.client = Anthropic(api_key=ANTHROPIC_API_KEY)
+        self.client = OpenAI(api_key=OPENAI_API_KEY)
     
     def _load_kb(self):
         """Load knowledge base from JSON file"""
@@ -51,7 +65,8 @@ class PlayerRAG:
     
     def resolve_player(self, query: str):
         """
-        Use Claude to identify NFL player from nickname/query.
+        Use OpenAI to identify NFL player from nickname/query.
+        Returns player info dict or None if not found/rejected.
         """
         print(f"\nResolving player: '{query}'")
         
@@ -63,8 +78,8 @@ class PlayerRAG:
                 if player["name"] == player_name:
                     return player
         
-        # Step 2: Use Claude to identify player
-        print(f"Using Claude to identify player: ")
+        # Step 2: Use OpenAI to identify player (only if not in KB)
+        print(f"Using OpenAI to identify player...")
 
         kb_context = json.dumps(self.knowledge_base, indent=2) if self.knowledge_base else "Empty knowledge base"
 
@@ -87,31 +102,31 @@ If you cannot identify a player, return:
 {{"error": "Player not found"}}"""
         
         try:
-            message = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+            message = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
                 max_tokens=200,
                 messages=[
                     {"role": "user", "content": prompt}
                 ]
             )
             
-            response_text = message.content[0].text.strip()
+            response_text = message.choices[0].message.content.strip()
             player_info = json.loads(response_text)
             
             if "error" in player_info:
                 print(f"✗ Could not identify player: {query}")
                 return None
             
-            # Step 3: Confirm with user
+            # Step 3: Confirm with user and ADD to KB
             if self.confirm_player_with_user(player_info):
                 self.add_player_to_kb(player_info)
                 return player_info
             else:
-                print("Player not confirmed.")
+                print("Player not confirmed. Exiting.")
                 return None
                 
         except json.JSONDecodeError as e:
-            print(f"Failed to parse Claude response: {e}")
+            print(f"Failed to parse OPENAI response: {e}")
             return None
         except Exception as e:
             print(f"Error: {e}")
