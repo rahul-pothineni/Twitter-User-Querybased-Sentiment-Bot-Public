@@ -181,7 +181,7 @@ def analyze_twitter_sentiment(
 # ==============================
 
 analyze_twitter_sentiment(
-    query="King Henry",
+    query="Cheetah",
     phrase="",
     limit=10,
     search_type="Top"

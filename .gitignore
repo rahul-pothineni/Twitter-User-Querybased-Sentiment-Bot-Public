@@ -1,1 +1,7 @@
-Keys.py
+.env
+__pycache__/
+*.pyc
+.DS_Store
+
+You are a senior backend engeineer how would you make this into a FastAPI, do not implement Just give me the plan.
+

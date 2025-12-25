@@ -13,20 +13,25 @@ Dependencies:
     - openai
     - json
     - pathlib
+    - python-dotenv
 """
 
 import json
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 import Database
 from openai import OpenAI
-from Keys import OPENAI_API_KEY
+
+# Load environment variables from .env file
+load_dotenv()
 
 class PlayerRAG:
     def __init__(self, kb_file: str = "nfl_players_kb.json"):
         self.kb_file = kb_file
         self.knowledge_base = self._load_kb()
         self.nickname_map = self._build_nickname_map()
-        self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     def _load_kb(self):
         """Load knowledge base from JSON file"""

@@ -12,16 +12,20 @@ Created: 2025-12-05 - Present
 
 Dependencies:
     - requests
+    - python-dotenv
 """
-import Keys # create own file with api keys (README.md)
 import requests
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ==============================
 # CONFIG
 
-RAPIDAPI_KEY = Keys.RAPIDAPI_KEY
-RAPIDAPI_HOST = Keys.RAPIDAPI_HOST
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
+RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST")
 BASE_URL = f"https://{RAPIDAPI_HOST}/search.php"
 
 # ==============================
