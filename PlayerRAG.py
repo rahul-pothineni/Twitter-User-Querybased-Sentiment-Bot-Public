@@ -142,9 +142,9 @@ If you cannot identify a player, return:
         print(f"\n✓ Found: {player_info['name']}")
         print(f"  Team: {player_info['team']}")
         print(f"  Position: {player_info['position']}")
+        print("Player confirmed automatically for the API usage.")
         
-        confirm = input("\nIs this the player? (y/n): ").strip().lower()
-        return confirm == 'y'
+        return True  # Auto-confirm for this implementation
     
     def add_player_to_kb(self, player_info: dict):
         """Add new player to knowledge base and save to file"""

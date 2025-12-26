@@ -175,16 +175,11 @@ def analyze_twitter_sentiment(
     print(f"Negative: {negative}")
     print(f"Neutral:  {neutral}")
 
-
-# ==============================
-# TEST
-# ==============================
-
-analyze_twitter_sentiment(
-    query="Cheetah",
-    phrase="",
-    limit=10,
-    search_type="Top"
-)
-
-#Database.print_sentiment_and_tweets()
+    # returns a summary dict for the API.
+    return{
+        "tweets_analyzed": analyzed_count,
+        "average_polarity": avg_polarity,
+        "positive": positive,
+        "negative": negative,
+        "neutral": neutral
+    }

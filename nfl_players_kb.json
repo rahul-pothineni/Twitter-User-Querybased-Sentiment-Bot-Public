@@ -22,5 +22,45 @@
     "nicknames": [
       "Cheetah"
     ]
+  },
+  {
+    "name": "Brock Purdy",
+    "team": "Player not found",
+    "position": "Player not found",
+    "nicknames": [
+      "Brock Purdy"
+    ]
+  },
+  {
+    "name": "Tyrann Mathieu",
+    "team": "Kansas City Chiefs",
+    "position": "Safety",
+    "nicknames": [
+      "Honey Badger"
+    ]
+  },
+  {
+    "name": "Lamar Jackson",
+    "team": "Baltimore Ravens",
+    "position": "Quarterback",
+    "nicknames": [
+      "Lamar Jackson"
+    ]
+  },
+  {
+    "name": "Deebo Samuel",
+    "team": "San Francisco 49ers",
+    "position": "Wide Receiver",
+    "nicknames": [
+      "Deebo Samuel"
+    ]
+  },
+  {
+    "name": "Odell Beckham Jr.",
+    "team": "Cleveland Browns",
+    "position": "Wide Receiver",
+    "nicknames": [
+      "OBJ"
+    ]
   }
 ]
