@@ -62,5 +62,21 @@
     "nicknames": [
       "OBJ"
     ]
+  },
+  {
+    "name": "Jared Goff",
+    "team": "Detroit Lions",
+    "position": "Quarterback",
+    "nicknames": [
+      "Jared Goff"
+    ]
+  },
+  {
+    "name": "Dak Prescott",
+    "team": "Dallas Cowboys",
+    "position": "Quarterback",
+    "nicknames": [
+      "Dak Prescott"
+    ]
   }
 ]
